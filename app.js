@@ -1,6 +1,9 @@
 // MODULES
 const express = require('express');
 const morgan = require('morgan');
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+
 const usersRoute = require('./routes/usersRoute');
 const toursRoute = require('./routes/toursRoute');
 
@@ -24,5 +27,12 @@ app.use((req, res, next) => {
 // ROUTE
 app.use('/api/v1/users', usersRoute);
 app.use('/api/v1/tours', toursRoute);
+
+// HANDLE NOT VALID URLS IN MIDDLEWARE STACK
+app.all('*', (req, res, next) => {
+  next(new AppError(`can't find ${req.originalUrl} on this server`), 404);
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;

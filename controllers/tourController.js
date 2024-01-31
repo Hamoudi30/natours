@@ -1,6 +1,8 @@
 const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+
 //MIDDLEWARE ALIAS
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -29,47 +31,55 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
-      tour: tour,
+      tour,
     },
   });
 });
 
 exports.createTour = catchAsync(async (req, res, next) => {
-  try {
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      data: {
-        message: 'Tour created successfully',
-        data: newTour,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'bad request',
-      message: err.message,
-    });
-  }
+  const newTour = await Tour.create(req.body);
+  res.status(201).json({
+    status: 'success',
+    data: {
+      message: 'Tour created successfully',
+      data: newTour,
+    },
+  });
 });
 
 exports.updateTour = catchAsync(async (req, res, next) => {
-  const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true, // validators implemented inside mongoose model schema
   });
+
+  if (!tour) {
+    return next(new AppError('Tour not found using this id', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
-      updatedTour,
+      tour,
     },
   });
 });
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  await Tour.findByIdAndDelete(req.params.id);
+  const tour = await Tour.findByIdAndDelete(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('Tour not found using this id', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {

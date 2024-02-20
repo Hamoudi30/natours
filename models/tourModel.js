@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -10,10 +11,10 @@ const tourSchema = new mongoose.Schema(
       trim: true,
       minlength: [4, 'The minimum length of a tour is 4'],
       maxlength: [20, 'The maximum length of a tour is 20'],
-      validate: [
-        validator.isAlpha,
-        'A tour name must only contain alpha characters',
-      ],
+      // validate: [
+      //   validator.isAlpha,
+      //   'A tour name must only contain alpha characters',
+      // ],
     },
     slug: String,
     duration: {
@@ -66,6 +67,36 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocations: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      // EMBEDDED / DENORMALIZATION
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
     images: [String],
     createdAt: {
       type: Date,
@@ -79,9 +110,15 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
-// VIRTUAL PROPERTY
+// VIRTUAL PROPERTY (show data without saving it in database)
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+tourSchema.virtual('review', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 });
 
 // MONGOOSE MIDDLEWARE
@@ -91,6 +128,13 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// That's for embedding users documents inside the tour model
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);
+//   next();
+// });
 
 // tourSchema.pre('save', function (next) {
 //   this.slug = slugify(this.name, { lower: true });
@@ -106,6 +150,14 @@ tourSchema.pre('save', function (next) {
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.startTime = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
   next();
 });
 

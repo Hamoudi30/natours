@@ -13,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const usersRoute = require('./routes/usersRoute');
 const toursRoute = require('./routes/toursRoute');
+const reviewsRoute = require('./routes/reviewsRoute');
 
 const app = express();
 
@@ -26,7 +27,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // LIMIT REQUESTS FROM SAME API
 const limiter = rateLimit({
-  max: 5,
+  max: 1000,
   windowMs: 60 * 60 * 1000, // Block 60 minutes
   message: 'Too many requests from this IP, please try again later',
 });
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
 // ROUTE
 app.use('/api/v1/users', usersRoute);
 app.use('/api/v1/tours', toursRoute);
+app.use('/api/v1/reviews', reviewsRoute);
 
 // HANDLE NOT VALID URLS IN MIDDLEWARE STACK
 app.all('*', (req, res, next) => {

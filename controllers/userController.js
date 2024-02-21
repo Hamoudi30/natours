@@ -53,6 +53,12 @@ exports.createUser = (req, res) => {
     message: 'Go to /signup to complete registration',
   });
 };
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 exports.getAllUsers = factory.getAll(User);
 // Don't update password here
 exports.getUser = factory.getOne(User);

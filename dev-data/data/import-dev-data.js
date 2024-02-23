@@ -2,9 +2,11 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const Tour = require('../../models/tourModel');
+const Review = require('../../models/reviewModel');
+const User = require('../../models/userModel');
 
-dotenv.config({ path: './config.env' });
-
+dotenv.config({ path: '../../config.env' });
+// console.log(process.env);
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
   process.env.DATABASE_PASSWORD,
@@ -26,21 +28,29 @@ mongoose
 // READ JSON DATA
 
 const Tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const Reviews = JSON.parse(
+  fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8'),
+);
+const Users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
 
-const importTour = async () => {
+const importData = async () => {
   try {
     await Tour.create(Tours);
-    console.log('Tours imported');
+    await Review.create(Reviews);
+    await User.create(Users, { validateBeforeSave: false });
+    console.log('Data imported');
   } catch (err) {
     console.log(err);
   }
   process.exit();
 };
 
-const delteTours = async () => {
+const deleteData = async () => {
   try {
     await Tour.deleteMany({});
-    console.log('Tours deleted');
+    await Review.deleteMany({});
+    await User.deleteMany({});
+    console.log('Data deleted');
   } catch (err) {
     console.log(err);
   }
@@ -48,8 +58,8 @@ const delteTours = async () => {
 };
 
 if (process.argv[2] === '--import') {
-  importTour();
+  importData();
 }
 if (process.argv[2] === '--delete') {
-  delteTours();
+  deleteData();
 }

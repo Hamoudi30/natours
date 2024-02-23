@@ -11,10 +11,6 @@ const tourSchema = new mongoose.Schema(
       trim: true,
       minlength: [4, 'The minimum length of a tour is 4'],
       maxlength: [20, 'The maximum length of a tour is 20'],
-      // validate: [
-      //   validator.isAlpha,
-      //   'A tour name must only contain alpha characters',
-      // ],
     },
     slug: String,
     duration: {
@@ -109,6 +105,16 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   },
 );
+
+// INDEX
+
+tourSchema.index({
+  price: 1,
+  ratingsAverage: -1,
+});
+tourSchema.index({
+  slug: 1,
+});
 
 // VIRTUAL PROPERTY (show data without saving it in database)
 tourSchema.virtual('durationWeeks').get(function () {

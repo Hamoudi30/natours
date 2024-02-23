@@ -24,7 +24,8 @@ exports.getAll = (Model) =>
       .sort()
       .limitFields()
       .paginte();
-    const tours = await features.query; // get the query promise in tours object
+    // const tours = await features.query.explain(); // get the query promise in tours object
+    const tours = await features.query;
 
     res.status(200).json({
       status: 'success',

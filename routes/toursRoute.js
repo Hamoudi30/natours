@@ -10,10 +10,19 @@ router.use(authController.protect);
 router.use('/:tourId/reviews', reviewsRoute);
 
 router.route('/tour-stats').get(tourController.getTourStats);
+
 router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 router
   .route('/top-5-cheap')
   .get(tourController.aliasTopTours, tourController.getAllTours);
+
 router
   .route('/')
   .get(tourController.getAllTours)
@@ -21,6 +30,7 @@ router
     authController.restrictTo('admin', 'lead-guide'),
     tourController.createTour,
   );
+
 router
   .route('/:id')
   .get(tourController.getTour)

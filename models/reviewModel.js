@@ -27,6 +27,8 @@ const reviewSchema = new mongoose.Schema({
     required: [true, 'User must be provided'],
   },
 });
+// TODO: it works with not existing tourIDs
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true }, { dropDups: true });
 
 reviewSchema.pre(/^find/, function (next) {
   this.populate({

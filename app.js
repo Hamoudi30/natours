@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 // MODULES
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -16,6 +17,9 @@ const toursRoute = require('./routes/toursRoute');
 const reviewsRoute = require('./routes/reviewsRoute');
 
 const app = express();
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // GLOBAL MIDDLEWARE
 app.use(helmet());
@@ -56,7 +60,8 @@ app.use(
 );
 
 // SERVING STATIC FILES
-app.use(express.static(`${__dirname}/public`));
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Test middleware
 app.use((req, res, next) => {
@@ -66,6 +71,12 @@ app.use((req, res, next) => {
 });
 
 // ROUTE
+app.get('/', (req, res) => {
+  res.status(200).render('core', {
+    tour: 'The Forest Hiker',
+    user: 'Hamoudi',
+  });
+});
 app.use('/api/v1/users', usersRoute);
 app.use('/api/v1/tours', toursRoute);
 app.use('/api/v1/reviews', reviewsRoute);
